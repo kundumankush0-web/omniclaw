@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omni Claw 🔮 — Your AI Supercomputer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+  <style>
+    :root {
+      --bg: #050510; --bg2: #0a0a1a; --card: #12122a; --border: #1a1a3a;
+      --text: #e8e8ff; --text2: #8888bb; --accent: #7c3aed; --accent2: #a78bfa;
+      --blue: #3b82f6; --green: #10b981; --gradient: linear-gradient(135deg, #7c3aed, #3b82f6);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system, 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height:100vh; }
+
+    /* Nav */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:12px 20px; background:rgba(5,5,16,0.9); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-size:20px; font-weight:800; display:flex; align-items:center; gap:8px; }
+    .logo span { background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .nav-status { font-size:12px; color:var(--green); }
+
+    /* Main */
+    main { margin-top:60px; padding:20px; max-width:900px; margin-left:auto; margin-right:auto; }
+
+    /* Tabs */
+    .tabs { display:flex; gap:8px; margin-bottom:20px; overflow-x:auto; padding-bottom:8px; }
+    .tab { padding:10px 18px; border-radius:100px; font-size:13px; font-weight:600; background:var(--card); border:1px solid var(--border); cursor:pointer; white-space:nowrap; transition:all 0.2s; color:var(--text2); }
+    .tab.active { background:rgba(124,58,237,0.2); border-color:var(--accent); color:var(--accent2); }
+    .tab:hover { border-color:var(--accent); }
+
+    /* Panels */
+    .panel { display:none; }
+    .panel.active { display:block; }
+
+    /* Input area */
+    .input-area { display:flex; gap:10px; margin-bottom:20px; }
+    .input-area input, .input-area textarea { flex:1; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 18px; color:var(--text); font-size:15px; outline:none; font-family:inherit; }
+    .input-area input:focus, .input-area textarea:focus { border-color:var(--accent); }
+    .btn { background:var(--gradient); color:white; border:none; border-radius:12px; padding:14px 28px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+    .btn:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(124,58,237,0.4); }
+    .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    /* Filters */
+    .filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+    .chip { padding:6px 14px; border-radius:100px; font-size:12px; background:var(--card); border:1px solid var(--border); cursor:pointer; color:var(--text2); transition:all 0.2s; }
+    .chip.active { background:rgba(124,58,237,0.2); border-color:var(--accent); color:var(--accent2); }
+
+    /* Results */
+    .result { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:16px; animation:fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .result h3 { font-size:16px; margin-bottom:12px; color:var(--accent2); }
+    .result p { line-height:1.7; font-size:14px; color:var(--text); white-space:pre-wrap; }
+    .sources { margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+    .sources h4 { font-size:13px; color:var(--text2); margin-bottom:10px; }
+    .source { padding:8px 0; border-bottom:1px solid rgba(26,26,58,0.5); }
+    .source:last-child { border-bottom:none; }
+    .source a { color:var(--blue); text-decoration:none; font-size:13px; }
+    .source a:hover { text-decoration:underline; }
+    .source .date { font-size:11px; color:var(--text2); margin-top:2px; }
+    .cost { margin-top:12px; font-size:11px; color:var(--text2); }
+
+    /* Chat */
+    .chat-messages { min-height:300px; max-height:60vh; overflow-y:auto; margin-bottom:16px; }
+    .msg { margin-bottom:16px; display:flex; gap:10px; }
+    .msg.user { flex-direction:row-reverse; }
+    .msg-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .msg.user .msg-avatar { background:var(--gradient); }
+    .msg.ai .msg-avatar { background:rgba(124,58,237,0.3); }
+    .msg-content { max-width:80%; padding:12px 16px; border-radius:14px; font-size:14px; line-height:1.6; }
+    .msg.user .msg-content { background:var(--gradient); border-bottom-right-radius:4px; }
+    .msg.ai .msg-content { background:var(--card); border:1px solid var(--border); border-bottom-left-radius:4px; }
+
+    /* Settings */
+    .key-row { display:flex; align-items:center; gap:12px; padding:14px; background:var(--bg2); border-radius:12px; margin-bottom:10px; flex-wrap:wrap; }
+    .key-label { font-weight:600; min-width:100px; font-size:14px; }
+    .key-input { flex:1; min-width:200px; background:var(--card); border:1px solid var(--border); border-radius:8px; padding:8px 12px; color:var(--text); font-size:13px; outline:none; }
+    .key-input:focus { border-color:var(--accent); }
+
+    /* Loading */
+    .loading { text-align:center; padding:40px; color:var(--text2); }
+    .loading::after { content:'⏳'; animation:pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+    /* Mobile */
+    @media(max-width:600px) { .input-area { flex-direction:column; } .tabs { gap:4px; } .tab { padding:8px 12px; font-size:12px; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">🔮 <span>Omni Claw</span></div>
+    <div class="nav-status" id="status">Loading...</div>
+  </nav>
+
+  <main>
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('chat')">💬 Chat</div>
+      <div class="tab" onclick="showTab('research')">🔮 Research</div>
+      <div class="tab" onclick="showTab('search')">🔍 Search</div>
+      <div class="tab" onclick="showTab('reason')">🧠 Reason</div>
+      <div class="tab" onclick="showTab('settings')">⚙️ Keys</div>
+    </div>
+
+    <!-- Chat -->
+    <div class="panel active" id="panel-chat">
+      <div class="chat-messages" id="chat-msgs">
+        <div class="msg ai">
+          <div class="msg-avatar">🔮</div>
+          <div class="msg-content">Namaste! Main Omni Claw hoon — tumhara AI supercomputer. Kuch bhi puchho! 😊</div>
+        </div>
+      </div>
+      <div class="input-area">
+        <input type="text" id="chat-input" placeholder="Type anything..." onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn" onclick="sendChat()">Send ➤</button>
+      </div>
+    </div>
+
+    <!-- Research -->
+    <div class="panel" id="panel-research">
+      <div class="input-area">
+        <input type="text" id="research-input" placeholder="Research topic..." onkeydown="if(event.key==='Enter')doResearch()">
+        <button class="btn" onclick="doResearch()">Research 🔮</button>
+      </div>
+      <div class="filters">
+        <div class="chip active" onclick="setFilter(this,'standard')">Standard</div>
+        <div class="chip" onclick="setFilter(this,'deep')">Deep</div>
+        <div class="chip" onclick="setFilter(this,'academic')">Academic</div>
+        <div class="chip" onclick="setFilter(this,'arxiv')">arXiv</div>
+        <div class="chip" onclick="setFilter(this,'week')">Last Week</div>
+        <div class="chip" onclick="setFilter(this,'month')">Last Month</div>
+      </div>
+      <div id="research-result"></div>
+    </div>
+
+    <!-- Search -->
+    <div class="panel" id="panel-search">
+      <div class="input-area">
+        <input type="text" id="search-input" placeholder="Search..." onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="btn" onclick="doSearch()">Search 🔍</button>
+      </div>
+      <div id="search-result"></div>
+    </div>
+
+    <!-- Reason -->
+    <div class="panel" id="panel-reason">
+      <div class="input-area">
+        <input type="text" id="reason-input" placeholder="Complex question..." onkeydown="if(event.key==='Enter')doReason()">
+        <button class="btn" onclick="doReason()">Think 🧠</button>
+      </div>
+      <div id="reason-result"></div>
+    </div>
+
+    <!-- Settings -->
+    <div class="panel" id="panel-settings">
+      <div class="result">
+        <h3>🔑 API Keys</h3>
+        <div class="key-row">
+          <span class="key-label">🔮 Perplexity</span>
+          <input type="password" class="key-input" id="key-perplexity" placeholder="pplx-...">
+        </div>
+        <div class="key-row">
+          <span class="key-label">🟢 NVIDIA</span>
+          <input type="password" class="key-input" id="key-nvidia" placeholder="nvapi-...">
+        </div>
+        <div class="key-row">
+          <span class="key-label">🔵 OpenAI</span>
+          <input type="password" class="key-input" id="key-openai" placeholder="sk-...">
+        </div>
+        <div class="key-row">
+          <span class="key-label">🟠 Anthropic</span>
+          <input type="password" class="key-input" id="key-anthropic" placeholder="sk-ant-...">
+        </div>
+        <div class="key-row">
+          <span class="key-label">🟢 Google</span>
+          <input type="password" class="key-input" id="key-gemini" placeholder="...">
+        </div>
+        <br>
+        <button class="btn" onclick="saveKeys()">Save Keys</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentFilter = 'standard';
+
+    // Tab switching
+    function showTab(name) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('panel-' + name).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Filter
+    function setFilter(el, filter) {
+      el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      currentFilter = filter;
+    }
+
+    // API call helper
+    async function api(endpoint, data) {
+      const res = await fetch('/api/' + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return res.json();
+    }
+
+    // Chat
+    async function sendChat() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const msgs = document.getElementById('chat-msgs');
+      msgs.innerHTML += `<div class="msg user"><div class="msg-avatar">👤</div><div class="msg-content">${msg}</div></div>`;
+      input.value = '';
+      msgs.scrollTop = msgs.scrollHeight;
+
+      const loadingId = 'loading-' + Date.now();
+      msgs.innerHTML += `<div class="msg ai" id="${loadingId}"><div class="msg-avatar">🔮</div><div class="msg-content">Thinking...</div></div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+
+      try {
+        const result = await api('chat', { message: msg });
+        document.getElementById(loadingId).querySelector('.msg-content').textContent = result.answer || result.error || 'No response';
+      } catch (e) {
+        document.getElementById(loadingId).querySelector('.msg-content').textContent = 'Error: ' + e.message;
+      }
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    // Research
+    async function doResearch() {
+      const query = document.getElementById('research-input').value.trim();
+      if (!query) return;
+
+      const el = document.getElementById('research-result');
+      el.innerHTML = '<div class="loading">Researching</div>';
+
+      try {
+        const result = await api('research', {
+          query,
+          deep: currentFilter === 'deep',
+          filter: currentFilter
+        });
+
+        let html = `<div class="result"><h3>🔮 Research: "${query}"</h3><p>${result.answer}</p>`;
+        if (result.sources?.length) {
+          html += '<div class="sources"><h4>📚 Sources:</h4>';
+          result.sources.forEach((s, i) => {
+            html += `<div class="source"><a href="${s.url}" target="_blank">[${i+1}] ${s.title}</a><div class="date">${s.date || ''}</div></div>`;
+          });
+          html += '</div>';
+        }
+        if (result.cost?.total_cost) html += `<div class="cost">💰 $${result.cost.total_cost.toFixed(4)}</div>`;
+        html += '</div>';
+        el.innerHTML = html;
+      } catch (e) {
+        el.innerHTML = `<div class="result"><p>❌ ${e.message}</p></div>`;
+      }
+    }
+
+    // Search
+    async function doSearch() {
+      const query = document.getElementById('search-input').value.trim();
+      if (!query) return;
+
+      const el = document.getElementById('search-result');
+      el.innerHTML = '<div class="loading">Searching</div>';
+
+      try {
+        const result = await api('search', { query });
+        let html = `<div class="result"><h3>🔍 Search: "${query}"</h3><p>${result.answer}</p>`;
+        if (result.sources?.length) {
+          html += '<div class="sources"><h4>📚 Results:</h4>';
+          result.sources.forEach((s, i) => {
+            html += `<div class="source"><a href="${s.url}" target="_blank">[${i+1}] ${s.title}</a></div>`;
+          });
+          html += '</div>';
+        }
+        html += '</div>';
+        el.innerHTML = html;
+      } catch (e) {
+        el.innerHTML = `<div class="result"><p>❌ ${e.message}</p></div>`;
+      }
+    }
+
+    // Reason
+    async function doReason() {
+      const query = document.getElementById('reason-input').value.trim();
+      if (!query) return;
+
+      const el = document.getElementById('reason-result');
+      el.innerHTML = '<div class="loading">Thinking</div>';
+
+      try {
+        const result = await api('reason', { query });
+        let html = `<div class="result"><h3>🧠 Analysis</h3><p>${result.answer}</p>`;
+        if (result.sources?.length) {
+          html += '<div class="sources"><h4>📚 Sources:</h4>';
+          result.sources.forEach((s, i) => {
+            html += `<div class="source"><a href="${s.url}" target="_blank">[${i+1}] ${s.title}</a></div>`;
+          });
+          html += '</div>';
+        }
+        html += '</div>';
+        el.innerHTML = html;
+      } catch (e) {
+        el.innerHTML = `<div class="result"><p>❌ ${e.message}</p></div>`;
+      }
+    }
+
+    // Save keys
+    async function saveKeys() {
+      const keys = {
+        perplexity: document.getElementById('key-perplexity').value,
+        nvidia: document.getElementById('key-nvidia').value,
+        openai: document.getElementById('key-openai').value,
+        anthropic: document.getElementById('key-anthropic').value,
+        gemini: document.getElementById('key-gemini').value
+      };
+      await api('keys', keys);
+      alert('✅ Keys saved!');
+      checkStatus();
+    }
+
+    // Check status
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        const hasKey = Object.values(data.keys).some(v => v);
+        document.getElementById('status').textContent = hasKey ? '✅ Connected' : '⚠️ Add API Keys';
+      } catch {
+        document.getElementById('status').textContent = '❌ Offline';
+      }
+    }
+
+    checkStatus();
+  </script>
+</body>
+</html>
