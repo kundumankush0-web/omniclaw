@@ -1,0 +1,48 @@
+{
+  "name": "omniclaw",
+  "version": "1.0.0",
+  "description": "Omni Claw — Your own AI supercomputer. Any channel. Any model. Any task.",
+  "main": "src/index.js",
+  "bin": {
+    "omniclaw": "bin/omniclaw.js"
+  },
+  "scripts": {
+    "start": "node bin/omniclaw.js gateway start",
+    "ui": "node bin/ui-server.js",
+    "setup": "node bin/omniclaw.js setup",
+    "test": "echo \"Omni Claw ready\" && exit 0"
+  },
+  "keywords": [
+    "ai",
+    "assistant",
+    "research",
+    "agent",
+    "chat",
+    "whatsapp",
+    "telegram",
+    "discord",
+    "perplexity",
+    "self-hosted",
+    "omniclaw"
+  ],
+  "author": "Omni Claw",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omniclaw/omniclaw"
+  },
+  "homepage": "https://omniclaw.ai",
+  "dependencies": {
+    "openclaw": "latest"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "ui/",
+    "README.md",
+    "package.json"
+  ]
+}

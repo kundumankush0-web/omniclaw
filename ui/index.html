@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omni Claw 🔮 — Your AI Supercomputer</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a25;
+      --bg-input: #0f0f18;
+      --text-primary: #e8e8f0;
+      --text-secondary: #8888aa;
+      --accent: #7c3aed;
+      --accent-light: #a78bfa;
+      --accent-glow: rgba(124, 58, 237, 0.3);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --border: #2a2a3a;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background animation */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        radial-gradient(ellipse at 20% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 260px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .logo h1 {
+      font-size: 22px;
+      background: linear-gradient(135deg, var(--accent-light), #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .nav-items {
+      flex: 1;
+      padding: 0 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      border-left: 3px solid var(--accent);
+      background: rgba(124, 58, 237, 0.1);
+    }
+
+    .nav-item .icon { font-size: 18px; }
+
+    .sidebar-footer {
+      padding: 15px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Main content */
+    .main {
+      margin-left: 260px;
+      padding: 30px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-header {
+      margin-bottom: 30px;
+    }
+
+    .page-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    /* Cards */
+    .grid { display: grid; gap: 20px; }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+
+    .card-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .card-value {
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-light), #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Chat */
+    .chat-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      height: calc(100vh - 200px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .message {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .message.user { flex-direction: row-reverse; }
+
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+
+    .message.assistant .message-avatar {
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+    }
+
+    .message-content {
+      max-width: 70%;
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .message.user .message-content {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant .message-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-input-area {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 12px 20px;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input:focus {
+      border-color: var(--accent);
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: transform 0.2s;
+    }
+
+    .send-btn:hover { transform: scale(1.1); }
+
+    /* Research */
+    .research-input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .research-input {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      color: var(--text-primary);
+      font-size: 16px;
+      outline: none;
+    }
+
+    .research-input:focus { border-color: var(--accent); }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 24px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--accent-glow);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      background: rgba(124, 58, 237, 0.1);
+    }
+
+    /* Filter chips */
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip.active {
+      background: rgba(124, 58, 237, 0.2);
+      border-color: var(--accent);
+      color: var(--accent-light);
+    }
+
+    /* Results */
+    .results-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      min-height: 300px;
+    }
+
+    .result-item {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-item:last-child { border-bottom: none; }
+
+    .result-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--accent-light);
+    }
+
+    .result-snippet {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .result-url {
+      font-size: 12px;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* Models table */
+    .models-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .models-table th, .models-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .models-table th {
+      color: var(--text-secondary);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .models-table td { font-size: 14px; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+    .badge-info { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+    /* API Keys */
+    .key-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+    }
+
+    .key-name {
+      font-weight: 600;
+      min-width: 180px;
+    }
+
+    .key-status {
+      flex: 1;
+      color: var(--text-secondary);
+    }
+
+    .key-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--text-primary);
+      font-size: 13px;
+      width: 300px;
+      outline: none;
+    }
+
+    .key-input:focus { border-color: var(--accent); }
+
+    /* Deploy */
+    .deploy-option {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .deploy-option:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+
+    .deploy-option .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .sidebar { width: 60px; }
+      .sidebar .nav-item span, .sidebar .logo p, .sidebar .logo h1 span { display: none; }
+      .sidebar .logo h1 .icon-only { display: inline; }
+      .main { margin-left: 60px; padding: 15px; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .key-row { flex-direction: column; }
+      .key-input { width: 100%; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <h1>🔮 <span>Omni Claw</span></h1>
+      <p>Your AI Supercomputer</p>
+    </div>
+    <div class="nav-items">
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="icon">📊</span><span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showPage('chat')">
+        <span class="icon">💬</span><span>Chat</span>
+      </div>
+      <div class="nav-item" onclick="showPage('research')">
+        <span class="icon">🔮</span><span>Research</span>
+      </div>
+      <div class="nav-item" onclick="showPage('search')">
+        <span class="icon">🔍</span><span>Search</span>
+      </div>
+      <div class="nav-item" onclick="showPage('models')">
+        <span class="icon">🤖</span><span>Models</span>
+      </div>
+      <div class="nav-item" onclick="showPage('deploy')">
+        <span class="icon">🚀</span><span>Deploy</span>
+      </div>
+      <div class="nav-item" onclick="showPage('settings')">
+        <span class="icon">⚙️</span><span>Settings</span>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      v1.0.0 • MIT License
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+
+    <!-- Dashboard Page -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h2>🔮 Dashboard</h2>
+        <p>Your AI supercomputer at a glance</p>
+      </div>
+      <div class="grid grid-4">
+        <div class="card">
+          <div class="card-icon">💬</div>
+          <div class="card-value" id="stat-chats">0</div>
+          <p>Total Chats</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔮</div>
+          <div class="card-value" id="stat-research">0</div>
+          <p>Research Queries</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🤖</div>
+          <div class="card-value" id="stat-models">12+</div>
+          <p>Models Available</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📱</div>
+          <div class="card-value">20+</div>
+          <p>Channels</p>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top: 20px;">
+        <div class="card">
+          <h3>🔮 Quick Research</h3>
+          <p>Start a deep research query</p>
+          <div style="margin-top: 16px; display: flex; gap: 8px;">
+            <input type="text" class="research-input" placeholder="Research topic..." id="quick-research-input" style="flex:1;">
+            <button class="btn" onclick="quickResearch()">Research</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>💬 Quick Chat</h3>
+          <p>Ask anything</p>
+          <div style="margin-top: 16px; display: flex; gap: 8px;">
+            <input type="text" class="research-input" placeholder="Ask anything..." id="quick-chat-input" style="flex:1;">
+            <button class="btn" onclick="quickChat()">Ask</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Page -->
+    <div class="page" id="page-chat">
+      <div class="page-header">
+        <h2>💬 Chat</h2>
+        <p>Talk to your AI supercomputer</p>
+      </div>
+      <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+          <div class="message assistant">
+            <div class="message-avatar">🔮</div>
+            <div class="message-content">
+              Namaste! Main Omni Claw hoon — tumhara AI supercomputer. Kuch bhi puchho! 😊
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input type="text" class="chat-input" placeholder="Type your message..." id="chat-input" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="send-btn" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Research Page -->
+    <div class="page" id="page-research">
+      <div class="page-header">
+        <h2>🔮 Deep Research</h2>
+        <p>Multi-step research with citations powered by Perplexity</p>
+      </div>
+      <div class="research-input-group">
+        <input type="text" class="research-input" placeholder="Enter your research topic..." id="research-input">
+        <button class="btn" onclick="doResearch()">Research 🔮</button>
+      </div>
+      <div class="filters">
+        <div class="chip active" onclick="toggleFilter(this)" data-filter="standard">Standard</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="deep">Deep Research</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="academic">Academic</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="financial">Financial (SEC)</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="arxiv">arXiv Only</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="week">Last Week</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="month">Last Month</div>
+      </div>
+      <div class="results-container" id="research-results">
+        <p style="color: var(--text-secondary); text-align: center; padding: 40px;">
+          Enter a research topic above and click Research to get started 🔮
+        </p>
+      </div>
+    </div>
+
+    <!-- Search Page -->
+    <div class="page" id="page-search">
+      <div class="page-header">
+        <h2>🔍 Advanced Search</h2>
+        <p>Web search with filters — domain, recency, language, and more</p>
+      </div>
+      <div class="research-input-group">
+        <input type="text" class="research-input" placeholder="Search the web..." id="search-input">
+        <button class="btn" onclick="doSearch()">Search 🔍</button>
+      </div>
+      <div class="filters">
+        <div class="chip active" data-filter="all">All</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="arxiv">arXiv</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="nature">Nature</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="github">GitHub</div>
+        <div class="chip" onclick="toggleFilter(this)" data-filter="news">News</div>
+      </div>
+      <div class="results-container" id="search-results">
+        <p style="color: var(--text-secondary); text-align: center; padding: 40px;">
+          Enter a query above and click Search 🔍
+        </p>
+      </div>
+    </div>
+
+    <!-- Models Page -->
+    <div class="page" id="page-models">
+      <div class="page-header">
+        <h2>🤖 Models</h2>
+        <p>12+ AI models accessible through one API key</p>
+      </div>
+      <div class="card" style="overflow-x: auto;">
+        <table class="models-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Provider</th>
+              <th>Input $/1M</th>
+              <th>Output $/1M</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>GPT-5.4</strong></td>
+              <td>OpenAI</td>
+              <td>$2.50</td>
+              <td>$15.00</td>
+              <td><span class="badge badge-success">Available</span></td>
+            </tr>
+            <tr>
+              <td><strong>Claude Sonnet 4.6</strong></td>
+              <td>Anthropic</td>
+              <td>$3.00</td>
+              <td>$15.00</td>
+              <td><span class="badge badge-success">Available</span></td>
+            </tr>
+            <tr>
+              <td><strong>Gemini 3.1 Pro</strong></td>
+              <td>Google</td>
+              <td>$2.00</td>
+              <td>$12.00</td>
+              <td><span class="badge badge-success">Available</span></td>
+            </tr>
+            <tr>
+              <td><strong>Nemotron 70B</strong></td>
+              <td>NVIDIA</td>
+              <td>$0.25</td>
+              <td>$2.50</td>
+              <td><span class="badge badge-success">Available</span></td>
+            </tr>
+            <tr>
+              <td><strong>Grok 4.1 Fast</strong></td>
+              <td>xAI</td>
+              <td>$0.20</td>
+              <td>$0.50</td>
+              <td><span class="badge badge-success">Available</span></td>
+            </tr>
+            <tr>
+              <td><strong>Sonar Deep Research</strong></td>
+              <td>Perplexity</td>
+              <td>$2.00</td>
+              <td>$8.00</td>
+              <td><span class="badge badge-warning">Needs Key</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Deploy Page -->
+    <div class="page" id="page-deploy">
+      <div class="page-header">
+        <h2>🚀 Deploy</h2>
+        <p>Build and deploy your projects</p>
+      </div>
+      <div class="grid grid-3">
+        <div class="deploy-option" onclick="deployPlatform('docker')">
+          <div class="icon">🐳</div>
+          <h3>Docker</h3>
+          <p>Build and run containers</p>
+        </div>
+        <div class="deploy-option" onclick="deployPlatform('vercel')">
+          <div class="icon">▲</div>
+          <h3>Vercel</h3>
+          <p>Deploy to edge network</p>
+        </div>
+        <div class="deploy-option" onclick="deployPlatform('fly')">
+          <div class="icon">🪰</div>
+          <h3>Fly.io</h3>
+          <p>Deploy globally</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <h2>⚙️ Settings</h2>
+        <p>Configure your API keys and preferences</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom: 16px;">🔑 API Keys</h3>
+        <div class="key-row">
+          <span class="key-name">🔮 Perplexity</span>
+          <span class="key-status">Research + Search + Multi-Model</span>
+          <input type="password" class="key-input" placeholder="pplx-..." id="key-perplexity">
+        </div>
+        <div class="key-row">
+          <span class="key-name">🟢 OpenAI</span>
+          <span class="key-status">GPT-5 models</span>
+          <input type="password" class="key-input" placeholder="sk-..." id="key-openai">
+        </div>
+        <div class="key-row">
+          <span class="key-name">🟠 Anthropic</span>
+          <span class="key-status">Claude models</span>
+          <input type="password" class="key-input" placeholder="sk-ant-..." id="key-anthropic">
+        </div>
+        <div class="key-row">
+          <span class="key-name">🔵 Google</span>
+          <span class="key-status">Gemini models</span>
+          <input type="password" class="key-input" placeholder="..." id="key-gemini">
+        </div>
+        <div class="key-row">
+          <span class="key-name">🟢 NVIDIA</span>
+          <span class="key-status">Nemotron models</span>
+          <input type="password" class="key-input" placeholder="nvapi-..." id="key-nvidia">
+        </div>
+        <div class="key-row">
+          <span class="key-name">🦁 Brave</span>
+          <span class="key-status">Web search</span>
+          <input type="password" class="key-input" placeholder="BSA..." id="key-brave">
+        </div>
+        <div style="margin-top: 16px;">
+          <button class="btn" onclick="saveKeys()">Save Keys</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 20px;">
+        <h3 style="margin-bottom: 16px;">🤖 Default Model</h3>
+        <select class="key-input" style="width: 100%;" id="default-model">
+          <option value="nvidia/llama-3.1-nemotron-70b-instruct">Nemotron 70B (NVIDIA)</option>
+          <option value="openai/gpt-5.4">GPT-5.4 (OpenAI)</option>
+          <option value="anthropic/claude-sonnet-4-6">Claude Sonnet 4.6 (Anthropic)</option>
+          <option value="google/gemini-3.1-pro-preview">Gemini 3.1 Pro (Google)</option>
+          <option value="xai/grok-4-1-fast-non-reasoning">Grok 4.1 Fast (xAI)</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Navigation
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      event.target.closest('.nav-item').classList.add('active');
+    }
+
+    // Filter toggle
+    function toggleFilter(el) {
+      el.classList.toggle('active');
+    }
+
+    // Chat
+    function sendChat() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const messages = document.getElementById('chat-messages');
+      messages.innerHTML += `
+        <div class="message user">
+          <div class="message-avatar">👤</div>
+          <div class="message-content">${msg}</div>
+        </div>
+      `;
+      input.value = '';
+      messages.scrollTop = messages.scrollHeight;
+
+      // Simulate response
+      setTimeout(() => {
+        messages.innerHTML += `
+          <div class="message assistant">
+            <div class="message-avatar">🔮</div>
+            <div class="message-content">Processing your request with Omni Claw... 🤖</div>
+          </div>
+        `;
+        messages.scrollTop = messages.scrollHeight;
+      }, 1000);
+    }
+
+    // Research
+    function doResearch() {
+      const query = document.getElementById('research-input').value.trim();
+      if (!query) return;
+
+      const results = document.getElementById('research-results');
+      results.innerHTML = '<p style="text-align:center; padding:40px;">⏳ Researching: ' + query + '...</p>';
+
+      setTimeout(() => {
+        results.innerHTML = `
+          <h3 style="margin-bottom: 16px;">🔮 Research Results: "${query}"</h3>
+          <div class="result-item">
+            <div class="result-title">Omni Claw Deep Research Engine</div>
+            <div class="result-snippet">Connect your Perplexity API key to get real research results with citations. This is a demo of the Omni Claw interface.</div>
+            <a class="result-url" href="#">Connect API key in Settings →</a>
+          </div>
+        `;
+      }, 2000);
+    }
+
+    // Search
+    function doSearch() {
+      const query = document.getElementById('search-input').value.trim();
+      if (!query) return;
+
+      const results = document.getElementById('search-results');
+      results.innerHTML = '<p style="text-align:center; padding:40px;">⏳ Searching: ' + query + '...</p>';
+
+      setTimeout(() => {
+        results.innerHTML = `
+          <h3 style="margin-bottom: 16px;">🔍 Search Results: "${query}"</h3>
+          <div class="result-item">
+            <div class="result-title">Omni Claw Search Engine</div>
+            <div class="result-snippet">Connect your Perplexity API key to search the web with advanced filters — domain, recency, language, and more.</div>
+            <a class="result-url" href="#">Connect API key in Settings →</a>
+          </div>
+        `;
+      }, 1500);
+    }
+
+    // Quick actions
+    function quickResearch() {
+      const query = document.getElementById('quick-research-input').value.trim();
+      if (query) {
+        document.getElementById('research-input').value = query;
+        showPage('research');
+        doResearch();
+      }
+    }
+
+    function quickChat() {
+      const query = document.getElementById('quick-chat-input').value.trim();
+      if (query) {
+        document.getElementById('chat-input').value = query;
+        showPage('chat');
+        sendChat();
+      }
+    }
+
+    // Deploy
+    function deployPlatform(platform) {
+      alert('🚀 Deploying with ' + platform + '...\n\nConnect your project and API keys to deploy.');
+    }
+
+    // Save keys
+    function saveKeys() {
+      const keys = {
+        perplexity: document.getElementById('key-perplexity').value,
+        openai: document.getElementById('key-openai').value,
+        anthropic: document.getElementById('key-anthropic').value,
+        gemini: document.getElementById('key-gemini').value,
+        nvidia: document.getElementById('key-nvidia').value,
+        brave: document.getElementById('key-brave').value,
+      };
+      localStorage.setItem('omniclaw_keys', JSON.stringify(keys));
+      alert('✅ Keys saved!');
+    }
+
+    // Load keys on page load
+    window.onload = function() {
+      const keys = JSON.parse(localStorage.getItem('omniclaw_keys') || '{}');
+      for (const [name, value] of Object.entries(keys)) {
+        const el = document.getElementById('key-' + name);
+        if (el && value) el.value = value;
+      }
+    };
+  </script>
+</body>
+</html>
