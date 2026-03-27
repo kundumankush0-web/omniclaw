@@ -7,7 +7,7 @@
     "omniclaw": "bin/omniclaw.js"
   },
   "scripts": {
-    "start": "node bin/omniclaw.js gateway start",
+    "start": "node server.js",
     "ui": "node bin/ui-server.js",
     "setup": "node bin/omniclaw.js setup",
     "test": "echo \"Omni Claw ready\" && exit 0"

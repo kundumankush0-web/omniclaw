@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: omniclaw
+    runtime: node
+    buildCommand: ""
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: PERPLEXITY_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
